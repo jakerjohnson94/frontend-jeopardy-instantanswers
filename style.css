@@ -1,0 +1,51 @@
+html,
+body {
+  box-sizing: border-box;
+}
+body {
+  display: flex;
+  flex-direction: column;
+}
+div,
+button,
+input {
+  margin: 0.5em;
+}
+button {
+  padding-top: 0.5em;
+  height: 6em;
+}
+
+input {
+  max-width: 70vw;
+}
+h5 {
+  font-style: italic;
+}
+
+.nav-bar {
+  height: 100%;
+}
+#output {
+  height: 15vh;
+}
+.gridRow {
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+.cell {
+  border: 10px solid peachpuff;
+}
+.boardWrap {
+  display: flex;
+
+  justify-content: center;
+}
+#boardOut {
+  display: flex;
+  flex-direction: row;
+}
+.top__row {
+  margin-bottom: 4em;
+}
