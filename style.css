@@ -22,6 +22,11 @@ input {
 h5 {
   font-style: italic;
 }
+.cell,
+p {
+  width: fit-content;
+  height: fit-content;
+}
 
 .nav-bar {
   height: 100%;

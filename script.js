@@ -6,5 +6,3 @@ const jeopardyGrid = new JeopardyGrid(
   'calc(100vh/9)',
   document.getElementById('boardOut')
 );
-
-jeopardyGrid.fetchNewQuestion();

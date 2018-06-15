@@ -34,4 +34,4 @@ Now it's time to use `fetch()` to make some GET requests and do something semi-i
 
 ###
 
-GET https://jservice.io/api/random?count=6`
+GET https://jservice.io/api/clues?category=234
