@@ -66,6 +66,12 @@ Grid.prototype = {
       }
     }
   },
+  newColumn: function() {
+    const column = [];
+    column.element = document.createElement('div');
+    column.element.classList.add('column');
+    return column;
+  },
 
   findValidNeighbors: function(selectedCell, callback) {
     if (!selectedCell) return;

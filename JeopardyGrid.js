@@ -6,27 +6,29 @@ function JeopardyGrid(rowCount, columnCount, offsets, cellHeight, cellWidth, out
   this.textField = document.getElementById('textField');
   this.pointsOut = document.getElementById('points');
   this.apiBaseString = 'https://jservice.io/api/';
+  this.cellArray = [];
   this.categories = [];
   this.randomCategories = [];
   this.categoryCellArray = [];
+  this.valueCells = [];
+  this.gamePoints = 0;
   this.createCells();
   this.fetchRandomCategories();
+  document
+    .getElementById('submit')
+    .addEventListener('click', this.eventListeners.submitBtnClick.bind(this));
 }
-
 JeopardyGrid.prototype = Object.create(Grid.prototype);
 JeopardyGrid.prototype.constructor = Grid;
 
 JeopardyGrid.prototype.createCells = function() {
-  this.cellArray = [];
   for (let columnIndex = 0; columnIndex < this.rowCount; columnIndex++) {
-    const colElement = document.createElement('div');
-    this.outputElement.appendChild(colElement);
-    colElement.classList.add('gridCol');
-    this.cellArray.push([]);
+    const column = this.newColumn();
+    this.cellArray.push(column);
+    this.outputElement.appendChild(column.element);
     for (let rowIndex = 0; rowIndex < this.columnCount; rowIndex++) {
       const cell = new JeopardyCell(rowIndex, columnIndex);
-
-      colElement.appendChild(cell.element);
+      column.element.appendChild(cell.element);
       if (cell.element.dataset.rowIndex === '0') {
         this.categoryCellArray.push(cell);
         cell.element.classList.add('top__row');
@@ -39,17 +41,17 @@ JeopardyGrid.prototype.createCells = function() {
 };
 
 JeopardyGrid.prototype.fetchRandomCategories = function() {
-  fetch(`${this.apiBaseString}/random?count=6`)
+  fetch(`${this.apiBaseString}/random?count=12`)
     .then(responseObject => responseObject.json())
     .then(obj => {
-      for (let i = 0; i < obj.length; i++) {
+      for (let i in obj) {
         this.randomCategories.push(obj[i]);
       }
-
-      this.getQuestions();
+      this.assignCategoriesToColumns();
     });
 };
-JeopardyGrid.prototype.getQuestions = function() {
+
+JeopardyGrid.prototype.assignCategoriesToColumns = function() {
   const fetches = this.randomCategories.map(category => {
     const catID = category.category.id;
     return fetch(`${this.apiBaseString}category?id=${catID}`).then(responseObject =>
@@ -61,6 +63,7 @@ JeopardyGrid.prototype.getQuestions = function() {
     this.addCellCategories();
   });
 };
+
 JeopardyGrid.prototype.addCellCategories = function() {
   for (let col in this.cellArray) {
     for (let cell of this.cellArray[col]) {
@@ -69,59 +72,72 @@ JeopardyGrid.prototype.addCellCategories = function() {
       }
     }
   }
-  this.populateCategoryCells();
+  this.populateCellText();
 };
 
-JeopardyGrid.prototype.populateCategoryCells = function() {
-  for (let col in this.cellArray) {
-    for (let i = 0; i < this.cellArray[col].length; i++) {
-      if (this.cellArray[col][i].isTopRow) {
-        const categoryName = document.createElement('p');
-        categoryName.textContent = this.cellArray[col][i].category.title;
-        this.cellArray[col][i].element.appendChild(categoryName);
-      } else {
-        const categoryValue = document.createElement('p');
-        console.log(i);
-        categoryValue.textContent = this.cellArray[col][i].category.clues[i].value;
-        this.cellArray[col][i].element.appendChild(categoryValue);
+JeopardyGrid.prototype.populateCellText = function() {
+  const topRowCells = [];
+  for (let col of this.cellArray) {
+    topRowCells.push(col.find(cell => cell.isTopRow));
+    this.valueCells.push(col.filter(cell => !cell.isTopRow));
+  }
+  topRowCells.forEach(cell => {
+    const categoryName = document.createElement('span');
+    categoryName.textContent = cell.category.title;
+    cell.element.appendChild(categoryName);
+  });
+
+  for (let col in this.valueCells) {
+    for (let row in this.valueCells[col]) {
+      const cell = this.valueCells[col][row];
+      cell.textElement = document.createElement('span');
+      cell.clue = cell.category.clues[row];
+      if (cell.clue.value === null || cell.clue.value === undefined) {
+        if (this.valueCells[col - 1][row].clue.value !== undefined)
+          cell.clue.value = this.valueCells[col - 1][row].clue.value;
+        else cell.clue.value = this.valueCells[col + 1][row].clue.value;
       }
+
+      cell.textElement.textContent = cell.clue.value;
+
+      cell.element.appendChild(cell.textElement);
+      cell.element.addEventListener('click', this.eventListeners.questionCellClick.bind(this));
     }
   }
 };
 
-JeopardyGrid.prototype.populateQuestionCells = function() {
-  for (let col in this.cellArray) {
-    for (let cell of this.cellArray[col]) {
-      if (cell.element.dataset.rowIndex !== 0) {
-        const questionName = document.createElement('p');
-        cell.element.appendChild(questionName);
-      }
+JeopardyGrid.prototype.eventListeners = {
+  questionCellClick: function(event) {
+    const rowIndex = event.currentTarget.dataset.rowIndex;
+    const columnIndex = event.currentTarget.dataset.columnIndex;
+    this.clickedCell = this.cellArray[columnIndex][rowIndex];
+    this.clickedCell.makeCurrentCell(this);
+
+    this.questionOutput.textContent = this.currentClue.question;
+    console.log(this.currentClue.answer);
+    console.log(this.currentClue.value);
+  },
+  submitBtnClick: function(event) {
+    if (this.getUserText()) {
     }
-  }
+  },
 };
 
-// JeopardyGrid.prototype.fetchNewQuestion = function() {
-//   fetch(`${this.apiBaseString}/random`)
-//     .then(responseObject => responseObject.json())
-//     .then(hydratedBody => {
-//       this.gameQuestion = hydratedBody[0].question;
-//       this.gameAnswer = hydratedBody[0].answer;
-//       this.questionOutput.textContent = this.gameQuestion;
-//       this.gamePoints = hydratedBody[0].value;
-//       this.categoryOut.textContent = hydratedBody[0].category.title;
-//     });
-// };
-//document.getElementById('newQuestion').addEventListener('click', fetchNewQuestion);
-//submitBtn.addEventListener('click', getUserText);
 JeopardyGrid.prototype.getUserText = function() {
-  this.textValue = this.textField.value;
-  console.log(textValue);
-  if (textValue.toLowerCase() === gameAnswer.toLowerCase()) {
-    alert('correct');
-    this.gamePoints += this.gamePoints;
+  let textValue = this.textField.value;
+
+  if (textValue.toLowerCase() === this.clickedCell.clue.answer.toLowerCase()) {
+    this.gamePoints += this.currentClue.value;
     this.pointsOut.textContent = this.gamePoints;
-    this.fetchNewQuestion();
+    this.clickedCell.textElement.textContent = '';
+    this.clickedCell = null;
+    this.questionOutput.textContent = 'CORRECT!';
+    this.textField.value = '';
+    return true;
   } else {
-    alert('incorrect');
+    this.gamePoints -= this.currentClue.value;
+    this.pointsOut.textContent = this.gamePoints;
+    this.questionOutput.textContent = 'WRONG!';
+    return false;
   }
 };

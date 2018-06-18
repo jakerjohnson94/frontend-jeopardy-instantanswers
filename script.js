@@ -3,6 +3,6 @@ const jeopardyGrid = new JeopardyGrid(
   6,
   [],
   'calc(100vh/6)',
-  'calc(100vh/9)',
+  'calc(100vh/12)',
   document.getElementById('boardOut')
 );

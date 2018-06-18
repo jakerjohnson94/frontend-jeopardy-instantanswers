@@ -22,11 +22,6 @@ input {
 h5 {
   font-style: italic;
 }
-.cell,
-p {
-  width: fit-content;
-  height: fit-content;
-}
 
 .nav-bar {
   height: 100%;
@@ -40,6 +35,10 @@ p {
   display: flex;
 }
 .cell {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border: 10px solid peachpuff;
 }
 .boardWrap {
@@ -53,4 +52,5 @@ p {
 }
 .top__row {
   margin-bottom: 4em;
+  height: calc(100vh / 8) !important;
 }
