@@ -41,7 +41,7 @@ JeopardyGrid.prototype.createCells = function() {
 
 JeopardyGrid.prototype.fetchRandomCategories = function() {
   const randomCategories = [];
-  fetch(`${this.apiBaseString}/random?count=12`)
+  fetch(`${this.apiBaseString}random?count=12`)
     .then(responseObject => responseObject.json())
     .then(obj => {
       for (let i in obj) {
